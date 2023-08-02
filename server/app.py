@@ -21,37 +21,37 @@ api = Api(app)
 
 class Index(Resource):
     def get(self):
-        return 'Code challenge'
+        return make_response('Code challenge', 200)
 
 class Episodes(Resource):
     def get(self, id=None):
         if id is not None and id > 0:
             episode = Episode.query.filter(Episode.id == id).one_or_none()
             if episode is None:
-                return {"error": "Episode not found"}, 404
-            return episode.to_dict(), 200
+                return make_response({"error": "Episode not found"}, 404)
+            return make_response(episode.to_dict(), 200)
         elif id is not None and id <= 0:
-            return {"error": "Episode not found"}, 404
+            return make_response({"error": "Episode not found"}, 404)
         else:
             episodes = Episode.query.all()
-            return [episode.to_dict() for episode in episodes], 200
+            return make_response([episode.to_dict() for episode in episodes], 200)
 
     def delete(self, id):
         if id > 0:
             episode = Episode.query.filter(Episode.id == id).one_or_none()
             if episode is None:
-                return {"error": "Episode not found"}, 404
+                return make_response({"error": "Episode not found"}, 404)
             db.session.delete(episode)
             db.session.commit()
-            return '', 204
+            return make_response('', 204)
         else:
-            return {"error": "Episode not found"}, 404
+            return make_response({"error": "Episode not found"}, 404)
 
 
 class Guests(Resource):
     def get(self):
         guests = Guest.query.all()
-        return [guest.to_dict() for guest in guests]
+        return make_response([guest.to_dict() for guest in guests], 200)
 
 class Appearances(Resource):
     def post(self):
@@ -60,9 +60,9 @@ class Appearances(Resource):
             appearance = Appearance(**data)
             db.session.add(appearance)
             db.session.commit()
-            return appearance.to_dict(), 201
+            return make_response(appearance.to_dict(), 201)
         except ValueError:
-            return {"errors": ["validation errors"]}, 400
+            return make_response({"errors": ["validation errors"]}, 400)
 
 api.add_resource(Index, '/')
 api.add_resource(Episodes, '/episodes', '/episodes/<int:id>')
