@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import MetaData
-from sqlalchemy.orm import validates
+from sqlalchemy import MetaData, ForeignKey
+from sqlalchemy.orm import validates, relationship
 from sqlalchemy_serializer import SerializerMixin
 
 metadata = MetaData(naming_convention={
@@ -12,7 +12,6 @@ metadata = MetaData(naming_convention={
 
 db = SQLAlchemy(metadata=metadata)
 
-
 class Episode(db.Model, SerializerMixin):
     __tablename__ = 'episodes'
 
@@ -20,10 +19,9 @@ class Episode(db.Model, SerializerMixin):
     date = db.Column(db.String)
     number = db.Column(db.Integer)
 
-    # add relationship
-    
-    # add serialization rules
-    
+    appearances = relationship("Appearance", backref="episode", cascade="all, delete-orphan")
+
+    serialize_rules = ('-appearances.guest', '-appearances.episode',)
 
 class Guest(db.Model, SerializerMixin):
     __tablename__ = 'guests'
@@ -32,10 +30,9 @@ class Guest(db.Model, SerializerMixin):
     name = db.Column(db.String)
     occupation = db.Column(db.String)
 
-    # add relationship
-    
-    # add serialization rules
-    
+    appearances = relationship("Appearance", backref="guest", cascade="all, delete-orphan")
+
+    serialize_rules = ('-appearances',)
 
 class Appearance(db.Model, SerializerMixin):
     __tablename__ = 'appearances'
@@ -43,10 +40,12 @@ class Appearance(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     rating = db.Column(db.Integer)
 
-    # add relationships
-    
-    # add serialization rules
-    
-    # add validation
-    
-# add any models you may need.
+    episode_id = db.Column(db.Integer, ForeignKey('episodes.id'))
+    guest_id = db.Column(db.Integer, ForeignKey('guests.id'))
+
+    @validates('rating')
+    def validate_rating(self, key, rating):
+        if not 1 <= rating <= 5:
+            raise ValueError("Rating must be between 1 and 5")
+        return rating
+
