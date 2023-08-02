@@ -24,17 +24,19 @@ class Index(Resource):
         return make_response('Code challenge', 200)
 
 class Episodes(Resource):
-    def get(self, id=None):
-        if id is not None and id > 0:
+    def get(self):
+        episodes = Episode.query.all()
+        return make_response([episode.to_dict() for episode in episodes], 200)
+
+class EpisodeByID(Resource):
+    def get(self, id):
+        if id > 0:
             episode = Episode.query.filter(Episode.id == id).one_or_none()
             if episode is None:
                 return make_response({"error": "Episode not found"}, 404)
             return make_response(episode.to_dict(), 200)
-        elif id is not None and id <= 0:
-            return make_response({"error": "Episode not found"}, 404)
         else:
-            episodes = Episode.query.all()
-            return make_response([episode.to_dict() for episode in episodes], 200)
+            return make_response({"error": "Episode not found"}, 404)
 
     def delete(self, id):
         if id > 0:
@@ -46,7 +48,6 @@ class Episodes(Resource):
             return make_response('', 204)
         else:
             return make_response({"error": "Episode not found"}, 404)
-
 
 class Guests(Resource):
     def get(self):
@@ -65,7 +66,8 @@ class Appearances(Resource):
             return make_response({"errors": ["validation errors"]}, 400)
 
 api.add_resource(Index, '/')
-api.add_resource(Episodes, '/episodes', '/episodes/<int:id>')
+api.add_resource(Episodes, '/episodes')
+api.add_resource(EpisodeByID, '/episodes/<int:id>')
 api.add_resource(Guests, '/guests')
 api.add_resource(Appearances, '/appearances')
 
