@@ -19,9 +19,9 @@ db.init_app(app)
 
 api = Api(app)
 
-@app.route('/')
-def index():
-    return '<h1>Code challenge</h1>'
+class Index(Resource):
+    def index():
+        return '<h1>Code challenge</h1>'
 
 class Episodes(Resource):
     def get(self, id=None):
@@ -64,6 +64,7 @@ class Appearances(Resource):
         except ValueError as e:
             return make_response({"errors": [str(e)]}, 400)
 
+api.add_resource(Index, '/')
 api.add_resource(Episodes, '/episodes', '/episodes/<int:id>')
 api.add_resource(Guests, '/guests')
 api.add_resource(Appearances, '/appearances')
