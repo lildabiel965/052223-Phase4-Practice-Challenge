@@ -61,8 +61,8 @@ class Appearances(Resource):
             db.session.add(appearance)
             db.session.commit()
             return appearance.to_dict(), 201
-        except ValueError as e:
-            return make_response({"errors": [str(e)]}, 400)
+        except ValueError:
+            return {"errors": ["validation errors"]}, 400
 
 api.add_resource(Index, '/')
 api.add_resource(Episodes, '/episodes', '/episodes/<int:id>')
